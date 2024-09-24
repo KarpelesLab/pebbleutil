@@ -30,6 +30,29 @@ func Prefix(db *pebble.DB, pfx, seek []byte) func(yield func(k, v []byte) bool) 
 	}
 }
 
+// All will iterate over all entries in the database, optionally seeking at the requested
+// location.
+//
+// for k, v := range pebbleutil.All(db, nil) { ...
+func All(db *pebble.DB, seek []byte) func(yield func(k, v []byte) bool) {
+	return func(yield func(k, v []byte) bool) {
+		iter := must(db.NewIter(nil))
+		defer iter.Close()
+
+		if seek != nil {
+			iter.SeekGE(seek)
+		} else {
+			iter.First()
+		}
+
+		for ; iter.Valid(); iter.Next() {
+			if !yield(iter.Key(), iter.Value()) {
+				return
+			}
+		}
+	}
+}
+
 // incrementBytesArray adds 1 to the right-most byte, handling carry
 // 123456 becomes 123457
 // 1234ff becomes 123500
