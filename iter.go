@@ -53,6 +53,24 @@ func All(db *pebble.DB, seek []byte) func(yield func(k, v []byte) bool) {
 	}
 }
 
+// Range will iterate over records in the range [start, end) (that is, end will not be included).
+func Range(db *pebble.DB, start, end []byte) func(yield func(k, v []byte) bool) {
+	opts := &pebble.IterOptions{
+		LowerBound: start,
+		UpperBound: end,
+	}
+	return func(yield func(k, v []byte) bool) {
+		iter := must(db.NewIter(opts))
+		defer iter.Close()
+
+		for iter.First(); iter.Valid(); iter.Next() {
+			if !yield(iter.Key(), iter.Value()) {
+				return
+			}
+		}
+	}
+}
+
 // incrementBytesArray adds 1 to the right-most byte, handling carry
 // 123456 becomes 123457
 // 1234ff becomes 123500
