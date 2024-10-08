@@ -30,6 +30,27 @@ func Prefix(db *pebble.DB, pfx, seek []byte) func(yield func(k, v []byte) bool) 
 	}
 }
 
+// ReversePrefix is like Prefix but will iterate from the end. Seek will behave differently
+// however as it will seek to the next value instead of the passed value.
+func ReversePrefix(db *pebble.DB, pfx, seek []byte) func(yield func(k, v []byte) bool) {
+	return func(yield func(k, v []byte) bool) {
+		iter := must(PrefixIter(db, pfx))
+		defer iter.Close()
+
+		if seek != nil {
+			iter.SeekLT(seek)
+		} else {
+			iter.Last()
+		}
+
+		for ; iter.Valid(); iter.Prev() {
+			if !yield(iter.Key(), iter.Value()) {
+				return
+			}
+		}
+	}
+}
+
 // All will iterate over all entries in the database, optionally seeking at the requested
 // location.
 //
