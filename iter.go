@@ -92,11 +92,11 @@ func Range(db *pebble.DB, start, end []byte) func(yield func(k, v []byte) bool) 
 	}
 }
 
-// incrementBytesArray adds 1 to the right-most byte, handling carry
+// IncrementBytesArray adds 1 to the right-most byte, handling carry
 // 123456 becomes 123457
 // 1234ff becomes 123500
 // ffffff becomes nil
-func incrementBytesArray(uppr []byte) []byte {
+func IncrementBytesArray(uppr []byte) []byte {
 	uppr = slices.Clone(uppr)
 	pos := len(uppr) - 1
 	for {
@@ -118,7 +118,7 @@ func incrementBytesArray(uppr []byte) []byte {
 func PrefixIter(db *pebble.DB, pfx []byte) (*pebble.Iterator, error) {
 	opts := &pebble.IterOptions{
 		LowerBound: pfx,
-		UpperBound: incrementBytesArray(pfx),
+		UpperBound: IncrementBytesArray(pfx),
 	}
 	return db.NewIter(opts)
 }
