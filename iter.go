@@ -11,7 +11,7 @@ import (
 // Seek can be used to start at a specific key.
 //
 // for k, v := range pebbleutil.Prefix(db, pfx, nil) { ...
-func Prefix(db *pebble.DB, pfx, seek []byte) func(yield func(k, v []byte) bool) {
+func Prefix(db pebble.Reader, pfx, seek []byte) func(yield func(k, v []byte) bool) {
 	return func(yield func(k, v []byte) bool) {
 		iter := must(PrefixIter(db, pfx))
 		defer iter.Close()
@@ -32,7 +32,7 @@ func Prefix(db *pebble.DB, pfx, seek []byte) func(yield func(k, v []byte) bool) 
 
 // ReversePrefix is like Prefix but will iterate from the end. Seek will behave differently
 // however as it will seek to the next value instead of the passed value.
-func ReversePrefix(db *pebble.DB, pfx, seek []byte) func(yield func(k, v []byte) bool) {
+func ReversePrefix(db pebble.Reader, pfx, seek []byte) func(yield func(k, v []byte) bool) {
 	return func(yield func(k, v []byte) bool) {
 		iter := must(PrefixIter(db, pfx))
 		defer iter.Close()
@@ -55,7 +55,7 @@ func ReversePrefix(db *pebble.DB, pfx, seek []byte) func(yield func(k, v []byte)
 // location.
 //
 // for k, v := range pebbleutil.All(db, nil) { ...
-func All(db *pebble.DB, seek []byte) func(yield func(k, v []byte) bool) {
+func All(db pebble.Reader, seek []byte) func(yield func(k, v []byte) bool) {
 	return func(yield func(k, v []byte) bool) {
 		iter := must(db.NewIter(nil))
 		defer iter.Close()
@@ -75,7 +75,7 @@ func All(db *pebble.DB, seek []byte) func(yield func(k, v []byte) bool) {
 }
 
 // Range will iterate over records in the range [start, end) (that is, end will not be included).
-func Range(db *pebble.DB, start, end []byte) func(yield func(k, v []byte) bool) {
+func Range(db pebble.Reader, start, end []byte) func(yield func(k, v []byte) bool) {
 	opts := &pebble.IterOptions{
 		LowerBound: start,
 		UpperBound: end,
@@ -115,7 +115,7 @@ func IncrementBytesArray(uppr []byte) []byte {
 }
 
 // PrefixIter returns a [pebble.Iterator] configured to loop over the specified prefix.
-func PrefixIter(db *pebble.DB, pfx []byte) (*pebble.Iterator, error) {
+func PrefixIter(db pebble.Reader, pfx []byte) (*pebble.Iterator, error) {
 	opts := &pebble.IterOptions{
 		LowerBound: pfx,
 		UpperBound: IncrementBytesArray(pfx),
