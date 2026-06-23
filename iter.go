@@ -4,7 +4,7 @@ package pebbleutil
 import (
 	"slices"
 
-	"github.com/cockroachdb/pebble"
+	"github.com/cockroachdb/pebble/v2"
 )
 
 // Prefix returns an iterator function that yields key-value pairs with the given prefix.
